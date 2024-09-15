@@ -16,8 +16,7 @@ urlpatterns = [
     path('tasks/edit', task_view.updateTask, name="updateTask"),
     path('tasks/complete', task_view.completeTask, name="completeTask"),
     path('tasks/delete', task_view.deleteTask, name="deleteTask"),
-    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('login/', user_view.loginUser, name='login'),
     path('register/', user_view.registerUser, name="registerUser")
 ]
 

@@ -54,10 +54,12 @@ async function loginUser() {
     let password = $("#password-field").val();
 
     let errorElem = $("#login-errors");
+    let mainContent = $("#main-content");
 
     let request = new Request(preload.API_HOST + "/api/login/", {
         method: "POST",
         headers: {
+            "X-CSRFToken": preload._csrfToken ?? await (preload.obtainCSRFToken()),
             "content-type": "application/json"
         },
         credentials: "include",
@@ -70,7 +72,10 @@ async function loginUser() {
     let response = await fetch(request);
 
     if (response.ok) {
-        return;
+        let json = await response.json();
+        localStorage.setItem("access", json.access);
+        let taskTemplate = await (await fetch("../html/tasks.html")).text();
+        mainContent.html(taskTemplate);
     } else {
         errorElem.html("Could not log in with these credentials.");
         errorElem.removeAttr("hidden");
