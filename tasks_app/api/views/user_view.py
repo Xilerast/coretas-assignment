@@ -122,7 +122,7 @@ def loginUser(request):
             key="access",
             value=str(access),
             httponly=True,
-            secure=True,
+            secure=False,
             samesite="Lax",
             max_age=3600
         )

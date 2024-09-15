@@ -72,8 +72,6 @@ async function loginUser() {
     let response = await fetch(request);
 
     if (response.ok) {
-        let json = await response.json();
-        localStorage.setItem("access", json.access);
         let taskTemplate = await (await fetch("../html/tasks.html")).text();
         mainContent.html(taskTemplate);
     } else {
