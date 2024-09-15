@@ -31,23 +31,21 @@ def getTasks(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def getTask(request):
+def getTask(request, pkey):
     """Gets a single task from the DB, with the given Primary Key on the
     GET request. Available ONLY as a GET request"""
     if request.method != "GET":
         raise Http404
     
-    id = request.GET.get("id", None)
-    if id == None:
+    task = task_utils.getTask(pkey=pkey)
+    if task is None:
         return HttpResponseNotFound(json.dumps({
             "success": False,
             "status": 404,
             "message": "Not found"
         }), content_type="application/json")
-    
-    task = task_utils.getTask(pkey=id)
 
-    return JsonResponse(TaskSerializer(task, many=False))
+    return JsonResponse(TaskSerializer(task, many=False).data)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -57,7 +55,8 @@ def createTask(request):
     if request.method != "POST":
         raise Http404
     
-    title = request.POST.get("title", None)
+    req_body = json.loads(request.body)
+    title = req_body.get("title")
     if title == None:
         return HttpResponseBadRequest(json.dumps({
             "success": False,
@@ -65,24 +64,24 @@ def createTask(request):
             "message": "Bad request"
         }), content_type="application/json")
     
-    description = request.POST.get("description", "")
+    description = req_body.get("description", "")
 
-    task = task_utils.createTask(title=title, description=description)
+    task = task_utils.createTask(title=title, description=description, user=request.user)
 
     try:
         task.save()
-    except:
+    except Exception as e:
         return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not insert new task in DB."
         }), content_type="application/json")
     
-    return JsonResponse(TaskSerializer(task, many=False))
+    return JsonResponse(TaskSerializer(task, many=False).data)
 
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
-def updateTask(request):
+def updateTask(request, pkey):
     """Updates a task and saves it on the DB.
     Available ONLY as a PUT/PATCH request."""
     if request.method != "PUT" and request.method != "PATCH":
@@ -90,7 +89,7 @@ def updateTask(request):
     
     parsedReq = task_utils.parseUpdateTaskReq(request=request)
 
-    id = parsedReq.get("id")
+    id = pkey
     title = parsedReq.get("title")
     description = parsedReq.get("description")
     
@@ -101,28 +100,28 @@ def updateTask(request):
             "message": "Bad request"
         }), content_type="application/json")
     
-    task = task_utils.updateTask(id=id, title=title, description=description)
+    task = task_utils.updateTask(pkey=id, title=title, description=description)
 
     try:
         task.save()
-    except:
+    except Exception as e:
         return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not update task in DB."
         }), content_type="application/json")
     
-    return JsonResponse(TaskSerializer(task, many=False))
+    return JsonResponse(TaskSerializer(task, many=False).data)
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
-def completeTask(request):
+def completeTask(request, pkey):
     """Completes a task and saves it on the DB.
     Available ONLY as PATCH request."""
     if request.method != "PATCH":
         raise Http404
     
-    id = request.PATCH.get("id", None)
+    id = pkey
 
     if id == None:
         return HttpResponseBadRequest(json.dumps({
@@ -139,7 +138,7 @@ def completeTask(request):
             "message": "Not found"
         }), content_type="application/json")
     
-    task = task_utils.updateTask(pkey=task.id, title=task.title, description=task.description, completion_status=True)
+    task.completion_status = True
     
     try:
         task.save()
@@ -150,17 +149,17 @@ def completeTask(request):
             "message": "Internal Server Error. Could not update task in DB."
         }), content_type="application/json")
     
-    return JsonResponse(TaskSerializer(task, many=False))
+    return JsonResponse(TaskSerializer(task, many=False).data)
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated])
-def deleteTask(request):
+def deleteTask(request, pkey):
     """Deletes a task from the DB.
     Available ONLY as a DELETE request."""
     if request.method != "DELETE":
         raise Http404
     
-    id = request.DELETE.get("id", None)
+    id = pkey
     if id == None:
         return HttpResponseBadRequest(json.dumps({
             "success": False,
@@ -168,8 +167,9 @@ def deleteTask(request):
             "message": "Bad Request"
         }), content_type="application/json")
     
-    task = Task.objects.get(id=id)
-    if task == None:
+    try:
+        task = Task.objects.get(id=id)
+    except Task.DoesNotExist:
         return HttpResponseNotFound(json.dumps({
             "success": False,
             "status": 404,
