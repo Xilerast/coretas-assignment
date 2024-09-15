@@ -1,10 +1,27 @@
 from api.models import Task
 
+def getTasksCount():
+    """Returns a task count"""
+    task_count = Task.objects.count()
+    return task_count
+
+def getFilteredTasksCount():
+    """Returns a filtered task count"""
+    task_count = Task.objects.filter(completion_status__exact=True).count()
+    return task_count
+
 def getTasksList(page, page_limit):
     """Returns a list of tasks, with pagination"""
     start_index = (page - 1) * page_limit
     end_index = start_index + page_limit
     tasks = Task.objects.all()[start_index:end_index]
+    return tasks
+
+def getFilteredTaskList(page, page_limit):
+    """Returns a list of filtered tasks based on completion status"""
+    start_index = (page - 1) * page_limit
+    end_index = start_index + page_limit
+    tasks = Task.objects.filter(completion_status__exact=True)[start_index:end_index]
     return tasks
 
 def getTask(pkey):

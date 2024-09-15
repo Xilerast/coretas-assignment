@@ -2,7 +2,11 @@ from api.utils import task_utils
 from django.http import Http404, JsonResponse
 from api.serializers import TaskSerializer
 from api.models import Task
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes, api_view
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def getTasks(request):
     """Gets a list of tasks from the DB, and returns a JSON containing said list.
     Available ONLY as a GET request"""
@@ -13,8 +17,12 @@ def getTasks(request):
     page_size = request.GET.get("page_size", 10)
     tasks = task_utils.getTasksList(page=page, page_limit=page_size)
     serializer = TaskSerializer(tasks, many=True)
-    return JsonResponse(serializer.data)
+    return JsonResponse({
+        "tasks": serializer.data
+    })
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def getTask(request):
     """Gets a single task from the DB, with the given Primary Key on the
     GET request. Available ONLY as a GET request"""
@@ -33,6 +41,8 @@ def getTask(request):
 
     return JsonResponse(TaskSerializer(task, many=False))
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def createTask(request):
     """Creates a single task and inserts it on the DB.
     Available ONLY as a POST request"""
@@ -62,6 +72,8 @@ def createTask(request):
     
     return JsonResponse(TaskSerializer(task, many=False))
 
+@api_view(["PUT", "PATCH"])
+@permission_classes([IsAuthenticated])
 def updateTask(request):
     """Updates a task and saves it on the DB.
     Available ONLY as a PUT/PATCH request."""
@@ -94,6 +106,8 @@ def updateTask(request):
     
     return JsonResponse(TaskSerializer(task, many=False))
 
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
 def completeTask(request):
     """Completes a task and saves it on the DB.
     Available ONLY as PATCH request."""
@@ -130,6 +144,8 @@ def completeTask(request):
     
     return JsonResponse(TaskSerializer(task, many=False))
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
 def deleteTask(request):
     """Deletes a task from the DB.
     Available ONLY as a DELETE request."""
