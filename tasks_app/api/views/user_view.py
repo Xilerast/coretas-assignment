@@ -133,3 +133,19 @@ def loginUser(request):
             "status": 403,
             "message": "Unauthorized. Invalid credentials."
         }), content_type="application/json")
+
+@api_view(["GET"])
+def logoutUser(request):
+    """Logs user out."""
+    response = Response(status=200)
+
+    response.set_cookie(
+        key="access",
+        value="",
+        httponly=True,
+        secure=False,
+        samesite="Lax",
+        max_age=3600
+    )
+
+    return response

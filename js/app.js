@@ -74,11 +74,67 @@ async function loginUser() {
     if (response.ok) {
         let taskTemplate = await (await fetch("../html/tasks.html")).text();
         mainContent.html(taskTemplate);
+        await replaceButtons();
+        await preload.logUserInOnLoad();
     } else {
         errorElem.html("Could not log in with these credentials.");
         errorElem.removeAttr("hidden");
     }
 }
 
+async function logout() {
+    $("#top").html(originalBtnHtml);
+    $("#main-content").html('');
+    return await fetch(preload.API_HOST + "/api/logout/");
+}
+
+async function replaceButtons() {
+    let topElem = $("#top");
+    originalBtnHtml = topElem.html();
+    window.originalBtnHtml = originalBtnHtml;
+    topElem.html(await (await fetch("../html/loggedInBtns.html")).text());
+}
+
+async function deleteTask(id) {
+    let request = new Request(
+        preload.API_HOST + "/api/tasks/delete/" + String(id) + '/', {
+            method: "DELETE",
+            credentials: "include"
+        }
+    );
+
+    let response = await fetch(request);
+
+    if (response.ok) {
+        preload.logUserInOnLoad();
+    } else {
+        alert("Something went wrong");
+    }
+}
+
+async function displayTask(id) {
+    let request = new Request(
+        preload.API_HOST + "/api/tasks/" + String(id) + '/', {
+            method: "GET",
+            credentials: "include"
+        }
+    );
+
+    let response = await fetch(request);
+
+    if (response.ok) {
+        let json = await response.json();
+        let taskTemplate = await (await fetch("../html/task.html")).text();
+        $("#main-content").html(taskTemplate);
+        $("#task-title").html(`<h2>${json["title"]}</h2>`);
+        $("#task-description").html(`<p>${json["description"]}</p>`);
+        $("#task-completed").html(`<p>Completed: ${json["completion_status"]}</p>`);
+    }
+}
+
 window.registerUser = registerUser;
 window.loginUser = loginUser;
+window.logout = logout;
+window.replaceButtons = replaceButtons;
+window.deleteTask = deleteTask;
+window.displayTask = displayTask;

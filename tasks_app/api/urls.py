@@ -17,6 +17,7 @@ urlpatterns = [
     path('tasks/complete/<str:pkey>/', task_view.completeTask, name="completeTask"),
     path('tasks/delete/<str:pkey>/', task_view.deleteTask, name="deleteTask"),
     path('login/', user_view.loginUser, name='login'),
-    path('register/', user_view.registerUser, name="registerUser")
+    path('register/', user_view.registerUser, name="registerUser"),
+    path('logout/', user_view.logoutUser, name="logoutUser")
 ]
 

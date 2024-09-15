@@ -7,3 +7,8 @@ async function loginTemplate() {
     let loginTemplate = await (await fetch("../html/login.html")).text();
     $("#main-content").html(loginTemplate);
 }
+
+async function createTaskTemplate() {
+    let createTemplate = await (await fetch("../html/createTask.html")).text();
+    $("#main-content").html(createTemplate);
+}

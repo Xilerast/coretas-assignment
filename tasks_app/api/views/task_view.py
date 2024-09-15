@@ -17,12 +17,13 @@ def getTasks(request):
     page = int(request.GET.get("page", 1))
     page_size = int(request.GET.get("page_size", 10))
     filtered = request.GET.get("filtered", 0)
+    user = request.user
     if filtered == 0:
-        tasks = task_utils.getTasksList(page=page, page_limit=page_size)
-        tasks_number = task_utils.getTasksCount()
+        tasks = task_utils.getTasksList(page=page, page_limit=page_size, user=user)
+        tasks_number = task_utils.getTasksCount(user=user)
     else:
-        tasks = task_utils.getFilteredTaskList(page=page, page_limit=page_size)
-        tasks_number = task_utils.getFilteredTasksCount()
+        tasks = task_utils.getFilteredTaskList(page=page, page_limit=page_size, user=user)
+        tasks_number = task_utils.getFilteredTasksCount(user=user)
     serializer = TaskSerializer(tasks, many=True)
     return JsonResponse({
         "tasks": serializer.data,
