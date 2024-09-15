@@ -1,7 +1,6 @@
 from api.models import User
 from api.serializers import UserSerializer
-from django.http import Http404, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.http import Http404, JsonResponse, HttpResponse, HttpResponseBadRequest, HttpResponseServerError
 import json
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -13,11 +12,11 @@ def getUser(request):
     
     id = request.GET.get("id", None)
     if id == None:
-        return JsonResponse({
+        return HttpResponseBadRequest(json.dumps({
             "success": False,
             "status": 400,
             "message": "Bad request"
-        })
+        }), content_type="application/json")
     
     user = User.objects.get(id=id)
 
@@ -35,50 +34,59 @@ def registerUser(request):
     password = req_body.get("password")
 
     if username == None or email == None or password == None:
-        return JsonResponse({
+        return HttpResponseBadRequest(json.dumps({
             "success": False,
             "status": 400,
             "message": "Bad request"
-        })
+        }), content_type="application/json")
     
-    first_name = request.POST.get("first_name", None)
-    last_name = request.POST.get("last_name", None)
+    password_confirm = req_body.get("password_confirm")
+
+    if password != password_confirm:
+        return HttpResponseBadRequest(json.dumps({
+            "success": False,
+            "status": 400,
+            "message": "Bad request. Passwords do not match."
+        }), content_type="application/json")
+
+    first_name = req_body.get("first_name")
+    last_name = req_body.get("last_name")
 
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         user = None
     else:
-        return JsonResponse({
+        return HttpResponse(json.dumps({
             "success": False,
             "status": 409,
             "message": "Conflict: Resource already exists"
-        })
+        }), status=409, content_type="application/json")
     
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         user = None
     else:
-        return JsonResponse({
+        return HttpResponse(json.dumps({
             "success": False,
             "status": 409,
             "message": "Conflict: Resource already exists"
-        })
+        }), status=409, content_type="application/json")
 
     try:
         user = User.objects.create(username=username, email=email, password=make_password(password), first_name=first_name, last_name=last_name)
     except:
         if settings.DEBUG == True:
             raise
-        return JsonResponse({
+        return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not insert new user in DB."
-        })
+        }), content_type="application/json")
     
-    return JsonResponse({
+    return HttpResponse(json.dumps({
         "success": True,
         "status": 201,
         "message": "Created"
-    })
+    }), status=201, content_type="application/json")

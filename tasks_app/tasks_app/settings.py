@@ -42,13 +42,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api.apps.ApiConfig',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -139,3 +141,11 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = "api.User"
+
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1", "http://127.0.0.1:5500", "https://127.0.0.1", "https://127.0.0.1:5500"]
+#CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1", "http://127.0.0.1:5500", "https://127.0.0.1", "https://127.0.0.1:5500", "http://127.0.0.1:8000", "https://127.0.0.1:8000"]
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False

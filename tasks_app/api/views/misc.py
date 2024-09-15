@@ -1,4 +1,4 @@
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
 
 def default(request):
@@ -11,4 +11,7 @@ def default(request):
     })
 
 def csrf(request):
-    return JsonResponse({'csrfToken': get_token(request)})
+    token = get_token(request=request)
+    return JsonResponse({
+        "csrfToken": token
+    })

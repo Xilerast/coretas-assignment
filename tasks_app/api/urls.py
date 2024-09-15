@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 # This is the list of our routes
 urlpatterns = [
     path('', misc.default, name='default'),
-    path('csrf/', misc.get_token, name="csrf"),
+    path('csrf/', misc.csrf, name="csrf"),
     path('tasks/', task_view.getTasks, name='tasks'),
     path('tasks/<str:pk>/', task_view.getTask, name='task'),
     path('tasks/create', task_view.createTask, name='createTask'),
