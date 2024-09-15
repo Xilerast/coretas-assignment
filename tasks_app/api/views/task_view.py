@@ -1,9 +1,10 @@
 from api.utils import task_utils
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponseServerError, HttpResponseBadRequest, HttpResponseNotFound
 from api.serializers import TaskSerializer
 from api.models import Task
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes, api_view
+import json
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -13,12 +14,19 @@ def getTasks(request):
     if request.method != "GET":
         raise Http404
     
-    page = request.GET.get("page", 1)
-    page_size = request.GET.get("page_size", 10)
-    tasks = task_utils.getTasksList(page=page, page_limit=page_size)
+    page = int(request.GET.get("page", 1))
+    page_size = int(request.GET.get("page_size", 10))
+    filtered = request.GET.get("filtered", 0)
+    if filtered == 0:
+        tasks = task_utils.getTasksList(page=page, page_limit=page_size)
+        tasks_number = task_utils.getTasksCount()
+    else:
+        tasks = task_utils.getFilteredTaskList(page=page, page_limit=page_size)
+        tasks_number = task_utils.getFilteredTasksCount()
     serializer = TaskSerializer(tasks, many=True)
     return JsonResponse({
-        "tasks": serializer.data
+        "tasks": serializer.data,
+        "tasks_number": tasks_number
     })
 
 @api_view(["GET"])
@@ -31,11 +39,11 @@ def getTask(request):
     
     id = request.GET.get("id", None)
     if id == None:
-        return JsonResponse({
+        return HttpResponseNotFound(json.dumps({
             "success": False,
             "status": 404,
             "message": "Not found"
-        })
+        }), content_type="application/json")
     
     task = task_utils.getTask(pkey=id)
 
@@ -51,11 +59,11 @@ def createTask(request):
     
     title = request.POST.get("title", None)
     if title == None:
-        return JsonResponse({
+        return HttpResponseBadRequest(json.dumps({
             "success": False,
             "status": 400,
             "message": "Bad request"
-        })
+        }), content_type="application/json")
     
     description = request.POST.get("description", "")
 
@@ -64,11 +72,11 @@ def createTask(request):
     try:
         task.save()
     except:
-        return JsonResponse({
+        return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not insert new task in DB."
-        })
+        }), content_type="application/json")
     
     return JsonResponse(TaskSerializer(task, many=False))
 
@@ -87,22 +95,22 @@ def updateTask(request):
     description = parsedReq.get("description")
     
     if id == None or title == None:
-        return JsonResponse({
+        return HttpResponseBadRequest(json.dumps({
             "success": False,
             "status": 400,
             "message": "Bad request"
-        })
+        }), content_type="application/json")
     
     task = task_utils.updateTask(id=id, title=title, description=description)
 
     try:
         task.save()
     except:
-        return JsonResponse({
+        return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not update task in DB."
-        })
+        }), content_type="application/json")
     
     return JsonResponse(TaskSerializer(task, many=False))
 
@@ -117,30 +125,30 @@ def completeTask(request):
     id = request.PATCH.get("id", None)
 
     if id == None:
-        return JsonResponse({
+        return HttpResponseBadRequest(json.dumps({
             "success": False,
             "status": 400,
             "message": "Bad request"
-        })
+        }), content_type="application/json")
     
     task = Task.objects.get(id=id)
     if task == None:
-        return JsonResponse({
+        return HttpResponseNotFound(json.dumps({
             "success": False,
             "status": 404,
             "message": "Not found"
-        })
+        }), content_type="application/json")
     
     task = task_utils.updateTask(pkey=task.id, title=task.title, description=task.description, completion_status=True)
     
     try:
         task.save()
     except:
-        return JsonResponse({
+        return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not update task in DB."
-        })
+        }), content_type="application/json")
     
     return JsonResponse(TaskSerializer(task, many=False))
 
@@ -154,28 +162,28 @@ def deleteTask(request):
     
     id = request.DELETE.get("id", None)
     if id == None:
-        return JsonResponse({
+        return HttpResponseBadRequest(json.dumps({
             "success": False,
             "status": 400,
             "message": "Bad Request"
-        })
+        }), content_type="application/json")
     
     task = Task.objects.get(id=id)
     if task == None:
-        return JsonResponse({
+        return HttpResponseNotFound(json.dumps({
             "success": False,
             "status": 404,
             "message": "Not found"
-        })
+        }), content_type="application/json")
     
     try:
         task.delete()
     except:
-        return JsonResponse({
+        return HttpResponseServerError(json.dumps({
             "success": False,
             "status": 500,
             "message": "Internal Server Error. Could not delete task from DB."
-        })
+        }), content_type="application/json")
     finally:
         return JsonResponse({
             "success": True,
