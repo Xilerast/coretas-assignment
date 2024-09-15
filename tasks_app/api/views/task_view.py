@@ -70,9 +70,9 @@ def updateTask(request):
     
     parsedReq = task_utils.parseUpdateTaskReq(request=request)
 
-    id = parsedReq["id"]
-    title = parsedReq["title"]
-    description = parsedReq["description"]
+    id = parsedReq.get("id")
+    title = parsedReq.get("title")
+    description = parsedReq.get("description")
     
     if id == None or title == None:
         return JsonResponse({
