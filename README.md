@@ -82,3 +82,7 @@ In the backend, filtering works but only for completed tasks, provided that ther
 #### Changing the design of the app
 
 In hindsight, it would have been a better idea to use a table to display the list of tasks, and add an arrow or a button to each column name for filtering.
+
+#### Usernames are case sensitive
+
+Usernames are case sensitive. This can be fixed on the backend by calling lower on the username string before persisting on the database and before authentication.
