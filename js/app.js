@@ -112,9 +112,9 @@ async function deleteTask(id) {
     }
 }
 
-async function displayTask(id) {
+async function displayTask(task) {
     let request = new Request(
-        preload.API_HOST + "/api/tasks/" + String(id) + '/', {
+        preload.API_HOST + "/api/tasks/" + String(task.id) + '/', {
             method: "GET",
             credentials: "include"
         }
@@ -129,6 +129,52 @@ async function displayTask(id) {
         $("#task-title").html(`<h2>${json["title"]}</h2>`);
         $("#task-description").html(`<p>${json["description"]}</p>`);
         $("#task-completed").html(`<p>Completed: ${json["completion_status"]}</p>`);
+        $("#delete-btn").html(`<button type="button" class="btn btn-danger" onclick="deleteTask(${String(task.id)});">Delete</button>`);
+        $("#edit-btn").html(`<button type="button" class="btn btn-secondary" onclick='editTaskTemplate(${JSON.stringify(task)});'>Edit</button>`);
+        $("#complete-btn").html(`<button type="button" class="btn btn-success" onclick="completeTask(${String(task.id)});">Complete</button>`);
+    }
+}
+
+async function completeTask(id) {
+    let request = new Request(preload.API_HOST + "/api/tasks/complete/" + id + "/", {
+        method: "PATCH",
+        credentials: "include"
+    });
+    
+    let response = await fetch(request);
+    if (response.ok) {
+        displayTask(id);
+    }
+}
+
+async function editTask() {
+    let title = $("#title-field").val();
+    let descr = $("#descr-field").val();
+    let id = $("#task-id").val();
+
+    let request = new Request(preload.API_HOST + "/api/tasks/edit/" + id + '/', {
+        method: "PUT",
+        credentials: "include",
+        body: JSON.stringify({
+            "title": title,
+            "description": descr
+        })
+    });
+
+    let response = await fetch(request);
+
+    if (response.ok) {
+        let editSuccessElem = $("#edit-success");
+        editSuccessElem.html("Success!");
+        editSuccessElem.removeAttr("hidden");
+    } else if (response.status === 400) {
+        let editErrorElem = $("#edit-errors");
+        editErrorElem.html("Bad request");
+        editErrorElem.removeAttr("hidden");
+    } else if (response.status === 500) {
+        let editErrorElem = $("#edit-errors");
+        editErrorElem.html("Internal server error");
+        editErrorElem.removeAttr("hidden");
     }
 }
 
@@ -138,3 +184,5 @@ window.logout = logout;
 window.replaceButtons = replaceButtons;
 window.deleteTask = deleteTask;
 window.displayTask = displayTask;
+window.completeTask = completeTask;
+window.editTask = editTask;

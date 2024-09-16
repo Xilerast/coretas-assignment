@@ -1,0 +1,18 @@
+<div id="form" class="d-flex flex-column">
+    <div class="alert alert-danger text-center" id="edit-errors" hidden></div>
+    <div class="alert alert-success text-center" id="edit-success" hidden></div>
+
+    <input type="hidden" name="task-id" id="task-id">
+
+    <div class="margin-top-bottom-5px d-flex flex-column">
+        <label for="title">Title</label>
+        <input type="text" name="title" id="title-field">
+    </div>
+
+    <div class="margin-top-bottom-5px d-flex flex-column">
+        <label for="descr">Description</label>
+        <input type="text" name="descr" id="descr-field">
+    </div>
+
+    <span class="margin-top-bottom-5px d-flex justify-content-center"><button type="button" id="create-btn" class="btn btn-primary" onclick="editTask();">Edit</button></span>
+</div>

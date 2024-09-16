@@ -39,7 +39,8 @@ async function logUserInOnLoad() {
             const taskDiv = document.createElement("div");
             taskDiv.className = "task";
 
-            taskDiv.innerHTML = `<h5><a href="#" onclick="displayTask(${task.id});">${task.title}</a></h5>
+            let jsonTask = JSON.stringify(task);
+            taskDiv.innerHTML = `<h5><a href="#" onclick='displayTask(${jsonTask});'>${task.title}</a></h5>
             <button type="button" class="btn btn-danger" onclick="deleteTask(${task.id});">Delete</button>`;
 
             taskList.appendChild(taskDiv);
